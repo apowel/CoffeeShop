@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using CoffeeShop.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace CoffeeShop.Controllers
 {
@@ -17,7 +18,7 @@ namespace CoffeeShop.Controllers
         {
             _context = context;
         }
-
+        [AllowAnonymous]
         // GET: Items
         public IActionResult Index()
         {

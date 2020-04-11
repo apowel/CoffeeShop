@@ -20,6 +20,7 @@ namespace CoffeeShop.Areas.Identity
                         context.Configuration.GetConnectionString("CoffeeShopIdentityContextConnection")));
 
                 services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
+                    .AddRoles<IdentityRole>()
                     .AddEntityFrameworkStores<CoffeeShopIdentityContext>();
             });
         }
