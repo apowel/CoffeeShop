@@ -28,16 +28,13 @@
                 @Html.DisplayNameFor(model => model.Phone)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.UserPassword)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.ConfirmPassword)
-            </th>
-            <th>
                 @Html.DisplayNameFor(model => model.Points)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.Notifications)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Balance)
             </th>
             <th></th>
         </tr>
@@ -61,16 +58,13 @@
                 @Html.DisplayFor(modelItem => item.Phone)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.UserPassword)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.ConfirmPassword)
-            </td>
-            <td>
                 @Html.DisplayFor(modelItem => item.Points)
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Notifications)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Balance)
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |

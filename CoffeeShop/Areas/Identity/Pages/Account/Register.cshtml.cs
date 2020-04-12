@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using CoffeeShop.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -23,6 +24,7 @@ namespace CoffeeShop.Areas.Identity.Pages.Account
         private readonly UserManager<IdentityUser> _userManager;
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailSender _emailSender;
+        private readonly ShopDBContext _context = new ShopDBContext();
 
         public RegisterModel(
             UserManager<IdentityUser> userManager,
@@ -45,11 +47,23 @@ namespace CoffeeShop.Areas.Identity.Pages.Account
 
         public class InputModel
         {
+            //Properties are provided to create an IdentityDB User and a ShopDB User linked by identical email. This should allow for easier manipulation of properties specific to the coffee shop without messing with Identity stuff.
+
             [Required]
             [EmailAddress]
             [Display(Name = "Email")]
             public string Email { get; set; }
-
+            [Required(ErrorMessage = "A username is required.")]
+            [StringLength(20, ErrorMessage = "UserName must be between 3 and 10 characters")]
+            [RegularExpression(@"^[a-zA-Z|]+$", ErrorMessage = "Numbers and symbols are not allowed in a name.")]
+            public string UserName { get; set; }
+            [RegularExpression(@"^[a-zA-Z|]+$", ErrorMessage = "Numbers and symbols are not allowed in a name.")]
+            public string FirstName { get; set; }
+            [RegularExpression(@"^[a-zA-Z|]+$", ErrorMessage = "Numbers and symbols are not allowed in a name.")]
+            public string LastName { get; set; }
+            [Phone()]
+            [RegularExpression(@"^(?:\([2-9]\d{2}\)\ ?|[2-9]\d{2}(?:\-?|\ ?))[2-9]\d{2}[- ]?\d{4}$", ErrorMessage = "That is not a valid phone number.")]
+            public string Phone { get; set; }
             [Required]
             [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
             [DataType(DataType.Password)]
@@ -74,7 +88,8 @@ namespace CoffeeShop.Areas.Identity.Pages.Account
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
             if (ModelState.IsValid)
             {
-                var user = new IdentityUser { UserName = Input.Email, Email = Input.Email };
+                var user = new IdentityUser { UserName = Input.Email, Email = Input.Email, PhoneNumber = Input.Phone };
+                Users ShopUser = new Users { Email = Input.Email, UserName = Input.UserName, FirstName = Input.FirstName, LastName = Input.LastName, Phone = Input.Phone };
                 var result = await _userManager.CreateAsync(user, Input.Password);
                 if (result.Succeeded)
                 {
@@ -98,6 +113,8 @@ namespace CoffeeShop.Areas.Identity.Pages.Account
                     else
                     {
                         await _signInManager.SignInAsync(user, isPersistent: false);
+                        _context.Add(ShopUser);
+                        _context.SaveChanges();
                         return LocalRedirect(returnUrl);
                     }
                 }

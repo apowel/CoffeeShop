@@ -44,10 +44,6 @@ namespace CoffeeShop.Models
                     .HasName("UQ__Users__C9F28456ADB05A5B")
                     .IsUnique();
 
-                entity.Property(e => e.ConfirmPassword)
-                    .HasMaxLength(20)
-                    .IsUnicode(false);
-
                 entity.Property(e => e.Email).HasMaxLength(30);
 
                 entity.Property(e => e.FirstName).HasMaxLength(20);
@@ -60,10 +56,8 @@ namespace CoffeeShop.Models
                     .IsRequired()
                     .HasMaxLength(30);
 
-                entity.Property(e => e.UserPassword)
-                    .IsRequired()
-                    .HasMaxLength(20)
-                    .IsUnicode(false);
+                entity.Property(e => e.Balance);
+                
             });
 
             OnModelCreatingPartial(modelBuilder);

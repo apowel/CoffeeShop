@@ -11,8 +11,7 @@ namespace CoffeeShop.Models
         public string LastName { get; set; }
         public string Email { get; set; }
         public string Phone { get; set; }
-        public string UserPassword { get; set; }
-        public string ConfirmPassword { get; set; }
+        public decimal? Balance { get; set; }
         public int? Points { get; set; }
         public bool? Notifications { get; set; }
     }
