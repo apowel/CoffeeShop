@@ -10,32 +10,31 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace CoffeeShop.Controllers
 {
-    [Authorize(Roles = "Administrator, Manager")]
-    public class ItemsController : Controller
+    public class ShopController : Controller
     {
         private readonly ShopDBContext _context;
 
-        public ItemsController(ShopDBContext context)
+        public ShopController(ShopDBContext context)
         {
             _context = context;
         }
         [AllowAnonymous]
-        // GET: Items
-        public IActionResult Index()
+        // GET: Shop
+        public async Task<IActionResult> Index()
         {
-            return View( _context.Items.ToList());
+            return View(await _context.Items.ToListAsync());
         }
 
-        // GET: Items/Details/5
-        public IActionResult Details(int? id)
+        // GET: Shop/Details/5
+        public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
 
-            var items = _context.Items
-                .FirstOrDefault(m => m.Id == id);
+            var items = await _context.Items
+                .FirstOrDefaultAsync(m => m.Id == id);
             if (items == null)
             {
                 return NotFound();
@@ -44,37 +43,37 @@ namespace CoffeeShop.Controllers
             return View(items);
         }
 
-        // GET: Items/Create
+        // GET: Shop/Create
         public IActionResult Create()
         {
             return View();
         }
 
-        // POST: Items/Create
+        // POST: Shop/Create
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create([Bind("Id,ItemName,ItemDescription,Quantity,Price")] Items items)
+        public async Task<IActionResult> Create([Bind("Id,ItemName,ItemDescription,Quantity,Price")] Items items)
         {
             if (ModelState.IsValid)
             {
                 _context.Add(items);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
             return View(items);
         }
 
-        // GET: Items/Edit/5
-        public IActionResult Edit(int? id)
+        // GET: Shop/Edit/5
+        public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
 
-            var items = _context.Items.Find(id);
+            var items = await _context.Items.FindAsync(id);
             if (items == null)
             {
                 return NotFound();
@@ -82,12 +81,12 @@ namespace CoffeeShop.Controllers
             return View(items);
         }
 
-        // POST: Items/Edit/5
+        // POST: Shop/Edit/5
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(int id, [Bind("Id,ItemName,ItemDescription,Quantity,Price")] Items items)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,ItemName,ItemDescription,Quantity,Price")] Items items)
         {
             if (id != items.Id)
             {
@@ -99,7 +98,7 @@ namespace CoffeeShop.Controllers
                 try
                 {
                     _context.Update(items);
-                    _context.SaveChanges();
+                    await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -117,16 +116,16 @@ namespace CoffeeShop.Controllers
             return View(items);
         }
 
-        // GET: Items/Delete/5
-        public IActionResult Delete(int? id)
+        // GET: Shop/Delete/5
+        public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
 
-            var items = _context.Items
-                .FirstOrDefault(m => m.Id == id);
+            var items = await _context.Items
+                .FirstOrDefaultAsync(m => m.Id == id);
             if (items == null)
             {
                 return NotFound();
@@ -135,14 +134,14 @@ namespace CoffeeShop.Controllers
             return View(items);
         }
 
-        // POST: Items/Delete/5
+        // POST: Shop/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public IActionResult DeleteConfirmed(int id)
+        public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var items = _context.Items.Find(id);
+            var items = await _context.Items.FindAsync(id);
             _context.Items.Remove(items);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 

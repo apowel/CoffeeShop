@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Authorization;
 namespace CoffeeShop.Controllers
 {
     //[Authorize] makes authorization required for whole controller
+    [Authorize(Roles = "Administrator, Manager")]
     public class UsersController : Controller
     {
         private readonly ShopDBContext _context;
@@ -20,7 +21,7 @@ namespace CoffeeShop.Controllers
         {
             _context = context;
         }
-
+        
         // GET: Users
         public IActionResult Index()
         {
