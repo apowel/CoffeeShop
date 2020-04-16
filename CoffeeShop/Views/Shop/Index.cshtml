@@ -36,12 +36,12 @@
                 @Html.DisplayFor(modelItem => item.ItemDescription)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Price)
+                $@Html.DisplayFor(modelItem => item.Price)
             </td>
             <td>
                 <a asp-action="Details" asp-route-id="@item.Id">Details</a>
                 @if (SignInManager.IsSignedIn(User))
-                {
+                { 
                     <a asp-action="Buy" asp-route-id="@item.Id">| Buy</a>
                 }
             </td>

@@ -6,7 +6,7 @@
     ViewData["Title"] = "Index";
 }
 
-<h1>Index</h1>
+<h1>Items</h1>
 <p>
     <a asp-action="Create">Create New</a>
 </p>
@@ -42,7 +42,7 @@
                     @Html.DisplayFor(modelItem => item.Quantity)
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.Price)
+                    $@Html.DisplayFor(modelItem => item.Price)
                 </td>
                 @if (SignInManager.IsSignedIn(User))
                 {

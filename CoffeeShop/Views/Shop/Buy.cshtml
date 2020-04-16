@@ -1,0 +1,47 @@
+﻿@model CoffeeShop.Models.ViewModels.BuyViewModel
+
+@{
+    ViewData["Title"] = "Delete";
+}
+
+
+@if (Model.Balance < Model.Item.Price)
+{
+    <h1>Insufficient funds!</h1>
+    <a asp-action="Index">Back to List</a>
+}
+else
+{
+    <h1>Confirm Order</h1>
+
+    <h3>Please confirm your purchase below.</h3>
+    <div>
+        <h4>Items</h4>
+        <hr />
+        <dl class="row">
+            <dt class="col-sm-2">
+                @Html.DisplayNameFor(model => model.Item.ItemName)
+            </dt>
+            <dd class="col-sm-10">
+                @Html.DisplayFor(model => model.Item.ItemName)
+            </dd>
+            <dt class="col-sm-2">
+                @Html.DisplayNameFor(model => model.Item.ItemDescription)
+            </dt>
+            <dd class="col-sm-10">
+                @Html.DisplayFor(model => model.Item.ItemDescription)
+            </dd>
+            <dt class="col-sm-2">
+                @Html.DisplayNameFor(model => model.Item.Price)
+            </dt>
+            <dd class="col-sm-10">
+                @Html.DisplayFor(model => model.Item.Price)
+            </dd>
+        </dl>
+
+        <form asp-action="Buy">
+            <input type="submit" value="Confirm" class="btn btn-primary" /> |
+            <a asp-action="Index">Back to List</a>
+        </form>
+    </div>
+}

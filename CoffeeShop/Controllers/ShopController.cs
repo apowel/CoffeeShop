@@ -7,16 +7,23 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using CoffeeShop.Models;
 using Microsoft.AspNetCore.Authorization;
+using CoffeeShop.Data;
+using Microsoft.AspNetCore.Identity;
+using CoffeeShop.Models.ViewModels;
+using Microsoft.AspNetCore.Http;
 
 namespace CoffeeShop.Controllers
 {
     public class ShopController : Controller
     {
         private readonly ShopDBContext _context;
+        private readonly CoffeeShopIdentityContext _identityContext;
+        private readonly UserManager<IdentityUser> _userManager;
 
-        public ShopController(ShopDBContext context)
+        public ShopController(ShopDBContext context, UserManager<IdentityUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
         [AllowAnonymous]
         // GET: Shop
@@ -24,7 +31,36 @@ namespace CoffeeShop.Controllers
         {
             return View(await _context.Items.ToListAsync());
         }
+        public async Task<IActionResult> Buy(int id)
+        {
+            
+            IdentityUser iUser = await _userManager.GetUserAsync(HttpContext.User);
+            Users user = _context.Users.FirstOrDefault(e => e.Email == iUser.Email);
+            UserItems thisPurchase = new UserItems();
+            thisPurchase.UserId = user.Id;
+            thisPurchase.ItemId = id;
+            TempData["itemId"] = id;
+            TempData["userId"] = user.Id;
+            
+            BuyViewModel buyViewModel = new BuyViewModel() { Item = _context.Items.FirstOrDefault(e => e.Id == id), Balance = user.Balance, userItem = thisPurchase };
+            return View(buyViewModel);
+        }
 
+        // POST: Shop/Delete/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Buy()
+        {
+            Users user = _context.Users.FirstOrDefault(e => e.Id == (int)TempData["userId"]);
+            Items item = _context.Items.FirstOrDefault(e => e.Id == (int)TempData["itemId"]);
+            user.Balance -= item.Price;
+            user.Points++;
+
+            _context.Update(user);
+            _context.UserItems.Add(new UserItems() { ItemId = item.Id, UserId = user.Id);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
         // GET: Shop/Details/5
         public async Task<IActionResult> Details(int? id)
         {

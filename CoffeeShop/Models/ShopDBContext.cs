@@ -17,6 +17,7 @@ namespace CoffeeShop.Models
 
         public virtual DbSet<Items> Items { get; set; }
         public virtual DbSet<Users> Users { get; set; }
+        public virtual DbSet<UserItems> UserItems { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -58,6 +59,15 @@ namespace CoffeeShop.Models
 
                 entity.Property(e => e.Balance);
                 
+            });
+
+            modelBuilder.Entity<UserItems>(entity =>
+            {
+                entity.Property(e => e.UserItemId);
+
+                entity.Property(e => e.UserId);
+
+                entity.Property(e => e.ItemId);
             });
 
             OnModelCreatingPartial(modelBuilder);
