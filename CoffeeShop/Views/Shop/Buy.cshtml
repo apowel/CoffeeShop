@@ -5,7 +5,7 @@
 }
 
 
-@if (Model.Balance < Model.Item.Price)
+@if (Model.Balance < Model.Item.Price || null == Model.Balance)
 {
     <h1>Insufficient funds!</h1>
     <a asp-action="Index">Back to List</a>

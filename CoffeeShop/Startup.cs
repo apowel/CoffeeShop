@@ -40,6 +40,7 @@ namespace CoffeeShop
             {
                 options.AccessDeniedPath = new PathString("/Home/AccessDenied");
             });
+            services.AddSession();
             services.AddDbContext<ShopDBContext>();
             services.AddRazorPages();
         }
@@ -60,6 +61,7 @@ namespace CoffeeShop
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseCookiePolicy();
+            app.UseSession();
             app.UseAuthentication();
             app.UseRouting();
 

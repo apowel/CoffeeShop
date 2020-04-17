@@ -6,12 +6,17 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using CoffeeShop.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 
 namespace CoffeeShop.Controllers
 {
+    [AllowAnonymous]
     public class UserItemsController : Controller
     {
         private readonly ShopDBContext _context;
+        private readonly SignInManager<IdentityUser> signInManager;
+        private readonly UserManager<IdentityUser> _userManager;
 
         public UserItemsController(ShopDBContext context)
         {
@@ -21,7 +26,12 @@ namespace CoffeeShop.Controllers
         // GET: UserItems
         public async Task<IActionResult> Index()
         {
-            return View(await _context.UserItems.ToListAsync());
+            if (signInManager.IsSignedIn(User))
+            {
+                Users user = new ShopDBContext().Users.FirstOrDefault(e => e.Email == _userManager.GetUserName(User));
+                return View(await _context.UserItems.ToListAsync());
+            }
+            return RedirectToAction("Index", "Home");
         }
 
         // GET: UserItems/Details/5

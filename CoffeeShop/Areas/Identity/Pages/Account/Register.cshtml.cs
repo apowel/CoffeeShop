@@ -22,6 +22,7 @@ namespace CoffeeShop.Areas.Identity.Pages.Account
     {
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly UserManager<IdentityUser> _userManager;
+        private RoleManager<IdentityRole> roleManager;
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailSender _emailSender;
         private readonly ShopDBContext _context = new ShopDBContext();
@@ -113,6 +114,7 @@ namespace CoffeeShop.Areas.Identity.Pages.Account
                     else
                     {
                         await _signInManager.SignInAsync(user, isPersistent: false);
+                        result = await _userManager.AddToRoleAsync(user, "User");
                         _context.Add(ShopUser);
                         _context.SaveChanges();
                         return LocalRedirect(returnUrl);

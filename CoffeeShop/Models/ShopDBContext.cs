@@ -68,6 +68,8 @@ namespace CoffeeShop.Models
                 entity.Property(e => e.UserId);
 
                 entity.Property(e => e.ItemId);
+
+                entity.Property(e => e.PurchaseDate);
             });
 
             OnModelCreatingPartial(modelBuilder);

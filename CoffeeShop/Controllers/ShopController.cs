@@ -11,13 +11,14 @@ using CoffeeShop.Data;
 using Microsoft.AspNetCore.Identity;
 using CoffeeShop.Models.ViewModels;
 using Microsoft.AspNetCore.Http;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.IO;
 
 namespace CoffeeShop.Controllers
 {
     public class ShopController : Controller
     {
         private readonly ShopDBContext _context;
-        private readonly CoffeeShopIdentityContext _identityContext;
         private readonly UserManager<IdentityUser> _userManager;
 
         public ShopController(ShopDBContext context, UserManager<IdentityUser> userManager)
@@ -33,15 +34,19 @@ namespace CoffeeShop.Controllers
         }
         public async Task<IActionResult> Buy(int id)
         {
-            
-            IdentityUser iUser = await _userManager.GetUserAsync(HttpContext.User);
-            Users user = _context.Users.FirstOrDefault(e => e.Email == iUser.Email);
+
+            Users user = new ShopDBContext().Users.FirstOrDefault(e => e.Email == _userManager.GetUserName(User));
             UserItems thisPurchase = new UserItems();
+            
             thisPurchase.UserId = user.Id;
             thisPurchase.ItemId = id;
-            TempData["itemId"] = id;
-            TempData["userId"] = user.Id;
-            
+
+            HttpContext.Session.Set("thisPurchase", ObjectToByteArray(thisPurchase));
+            /*In case I decide to go back to using TempData instead of serializing the UserItems object.
+             * 
+             * TempData["itemId"] = id;
+            TempData["userId"] = user.Id;*/
+
             BuyViewModel buyViewModel = new BuyViewModel() { Item = _context.Items.FirstOrDefault(e => e.Id == id), Balance = user.Balance, userItem = thisPurchase };
             return View(buyViewModel);
         }
@@ -51,13 +56,19 @@ namespace CoffeeShop.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Buy()
         {
-            Users user = _context.Users.FirstOrDefault(e => e.Id == (int)TempData["userId"]);
-            Items item = _context.Items.FirstOrDefault(e => e.Id == (int)TempData["itemId"]);
+            /*In case I decide to go back to using TempData.
+             * 
+             * Users user = _context.Users.FirstOrDefault(e => e.Id == (int)TempData["userId"]);
+            Items item = _context.Items.FirstOrDefault(e => e.Id == (int)TempData["itemId"]);*/
+            
+            UserItems thisPurchase = (UserItems)ByteArrayToObject(HttpContext.Session.Get("thisPurchase"));
+            thisPurchase.PurchaseDate = DateTime.Now;
+            Users user = _context.Users.FirstOrDefault(e => e.Id == thisPurchase.UserId);
+            Items item = _context.Items.FirstOrDefault(e => e.Id == thisPurchase.ItemId);
             user.Balance -= item.Price;
             user.Points++;
-
             _context.Update(user);
-            _context.UserItems.Add(new UserItems() { ItemId = item.Id, UserId = user.Id);
+            _context.UserItems.Add(thisPurchase);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
@@ -184,6 +195,26 @@ namespace CoffeeShop.Controllers
         private bool ItemsExists(int id)
         {
             return _context.Items.Any(e => e.Id == id);
+        }
+        public static byte[] ObjectToByteArray(Object obj)
+        {
+            BinaryFormatter bf = new BinaryFormatter();
+            using (var ms = new MemoryStream())
+            {
+                bf.Serialize(ms, obj);
+                return ms.ToArray();
+            }
+        }
+        public static Object ByteArrayToObject(byte[] arrBytes)
+        {
+            using (var memStream = new MemoryStream())
+            {
+                var binForm = new BinaryFormatter();
+                memStream.Write(arrBytes, 0, arrBytes.Length);
+                memStream.Seek(0, SeekOrigin.Begin);
+                var obj = binForm.Deserialize(memStream);
+                return obj;
+            }
         }
     }
 }
