@@ -7,20 +7,23 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using CoffeeShop.Models;
 using Microsoft.AspNetCore.Authorization;
-
+using CoffeeShop.Data;
+using Microsoft.AspNetCore.Identity;
 
 namespace CoffeeShop.Controllers
 {
     //[Authorize] makes authorization required for whole controller
+    [Authorize(Roles = "Administrator, Manager")]
     public class UsersController : Controller
     {
         private readonly ShopDBContext _context;
+        private readonly CoffeeShopIdentityContext _identityContext;
 
         public UsersController(ShopDBContext context)
         {
             _context = context;
         }
-
+        
         // GET: Users
         public IActionResult Index()
         {
@@ -60,8 +63,12 @@ namespace CoffeeShop.Controllers
         {
             if (ModelState.IsValid)
             {
+                IdentityUser iUser = new IdentityUser() { UserName = users.Email, Email = users.Email, NormalizedEmail = users.Email.ToUpper(), PhoneNumber = users.Phone };
+                _identityContext.Add(iUser);
+                _identityContext.SaveChanges();
                 _context.Add(users);
                 _context.SaveChanges();
+                
                 return RedirectToAction(nameof(Index));
             }
             return View(users);

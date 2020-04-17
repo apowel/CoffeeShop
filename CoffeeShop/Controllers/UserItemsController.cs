@@ -8,94 +8,96 @@ using Microsoft.EntityFrameworkCore;
 using CoffeeShop.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
-using CoffeeShop.Data;
 
 namespace CoffeeShop.Controllers
 {
-    [Authorize(Roles = "Administrator, Manager")]
-    public class ItemsController : Controller
+    [AllowAnonymous]
+    public class UserItemsController : Controller
     {
         private readonly ShopDBContext _context;
-        private readonly CoffeeShopIdentityContext _identityContext;
-        private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly SignInManager<IdentityUser> signInManager;
         private readonly UserManager<IdentityUser> _userManager;
 
-
-        public ItemsController(ShopDBContext context)
+        public UserItemsController(ShopDBContext context)
         {
             _context = context;
         }
-        [AllowAnonymous]
-        // GET: Items
-        public IActionResult Index()
+
+        // GET: UserItems
+        public async Task<IActionResult> Index()
         {
-            return View( _context.Items.ToList());
+            if (signInManager.IsSignedIn(User))
+            {
+                Users user = new ShopDBContext().Users.FirstOrDefault(e => e.Email == _userManager.GetUserName(User));
+                return View(await _context.UserItems.ToListAsync());
+            }
+            return RedirectToAction("Index", "Home");
         }
 
-        // GET: Items/Details/5
-        public IActionResult Details(int? id)
+        // GET: UserItems/Details/5
+        public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
 
-            var items = _context.Items
-                .FirstOrDefault(m => m.Id == id);
-            if (items == null)
+            var userItems = await _context.UserItems
+                .FirstOrDefaultAsync(m => m.UserItemId == id);
+            if (userItems == null)
             {
                 return NotFound();
             }
 
-            return View(items);
+            return View(userItems);
         }
 
-        // GET: Items/Create
+        // GET: UserItems/Create
         public IActionResult Create()
         {
             return View();
         }
 
-        // POST: Items/Create
+        // POST: UserItems/Create
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create([Bind("Id,ItemName,ItemDescription,Quantity,Price")] Items items)
+        public async Task<IActionResult> Create([Bind("UserItemId,UserId,ItemId")] UserItems userItems)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(items);
-                _context.SaveChanges();
+                _context.Add(userItems);
+                await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(items);
+            return View(userItems);
         }
 
-        // GET: Items/Edit/5
-        public IActionResult Edit(int? id)
+        // GET: UserItems/Edit/5
+        public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
 
-            var items = _context.Items.Find(id);
-            if (items == null)
+            var userItems = await _context.UserItems.FindAsync(id);
+            if (userItems == null)
             {
                 return NotFound();
             }
-            return View(items);
+            return View(userItems);
         }
 
-        // POST: Items/Edit/5
+        // POST: UserItems/Edit/5
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(int id, [Bind("Id,ItemName,ItemDescription,Quantity,Price")] Items items)
+        public async Task<IActionResult> Edit(int id, [Bind("UserItemId,UserId,ItemId")] UserItems userItems)
         {
-            if (id != items.Id)
+            if (id != userItems.UserItemId)
             {
                 return NotFound();
             }
@@ -104,12 +106,12 @@ namespace CoffeeShop.Controllers
             {
                 try
                 {
-                    _context.Update(items);
-                    _context.SaveChanges();
+                    _context.Update(userItems);
+                    await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!ItemsExists(items.Id))
+                    if (!UserItemsExists(userItems.UserItemId))
                     {
                         return NotFound();
                     }
@@ -120,41 +122,41 @@ namespace CoffeeShop.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(items);
+            return View(userItems);
         }
 
-        // GET: Items/Delete/5
-        public IActionResult Delete(int? id)
+        // GET: UserItems/Delete/5
+        public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
 
-            var items = _context.Items
-                .FirstOrDefault(m => m.Id == id);
-            if (items == null)
+            var userItems = await _context.UserItems
+                .FirstOrDefaultAsync(m => m.UserItemId == id);
+            if (userItems == null)
             {
                 return NotFound();
             }
 
-            return View(items);
+            return View(userItems);
         }
 
-        // POST: Items/Delete/5
+        // POST: UserItems/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public IActionResult DeleteConfirmed(int id)
+        public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var items = _context.Items.Find(id);
-            _context.Items.Remove(items);
-            _context.SaveChanges();
+            var userItems = await _context.UserItems.FindAsync(id);
+            _context.UserItems.Remove(userItems);
+            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        private bool ItemsExists(int id)
+        private bool UserItemsExists(int id)
         {
-            return _context.Items.Any(e => e.Id == id);
+            return _context.UserItems.Any(e => e.UserItemId == id);
         }
     }
 }

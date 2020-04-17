@@ -17,13 +17,14 @@ namespace CoffeeShop.Models
 
         public virtual DbSet<Items> Items { get; set; }
         public virtual DbSet<Users> Users { get; set; }
+        public virtual DbSet<UserItems> UserItems { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
             {
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. See http://go.microsoft.com/fwlink/?LinkId=723263 for guidance on storing connection strings.
-                optionsBuilder.UseSqlServer("Server=DESKTOP-AODEQ1G\\SQLEXPRESS;Database=ShopDB;Trusted_Connection=True;");
+                optionsBuilder.UseSqlServer("Server=107.4.45.191\\SQLEXPRESS,1433;Database=ShopDB;User id=Admin;pwd=password;");
             }
         }
 
@@ -44,10 +45,6 @@ namespace CoffeeShop.Models
                     .HasName("UQ__Users__C9F28456ADB05A5B")
                     .IsUnique();
 
-                entity.Property(e => e.ConfirmPassword)
-                    .HasMaxLength(20)
-                    .IsUnicode(false);
-
                 entity.Property(e => e.Email).HasMaxLength(30);
 
                 entity.Property(e => e.FirstName).HasMaxLength(20);
@@ -60,10 +57,19 @@ namespace CoffeeShop.Models
                     .IsRequired()
                     .HasMaxLength(30);
 
-                entity.Property(e => e.UserPassword)
-                    .IsRequired()
-                    .HasMaxLength(20)
-                    .IsUnicode(false);
+                entity.Property(e => e.Balance);
+                
+            });
+
+            modelBuilder.Entity<UserItems>(entity =>
+            {
+                entity.Property(e => e.UserItemId);
+
+                entity.Property(e => e.UserId);
+
+                entity.Property(e => e.ItemId);
+
+                entity.Property(e => e.PurchaseDate);
             });
 
             OnModelCreatingPartial(modelBuilder);
