@@ -8,28 +8,44 @@ using Microsoft.EntityFrameworkCore;
 using CoffeeShop.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using CoffeeShop.Models.ViewModels;
 
 namespace CoffeeShop.Controllers
 {
-    [AllowAnonymous]
+    [Authorize(Roles ="Administrator, Manager, User")]
     public class UserItemsController : Controller
     {
         private readonly ShopDBContext _context;
-        private readonly SignInManager<IdentityUser> signInManager;
+        private readonly SignInManager<IdentityUser> _signInManager;
         private readonly UserManager<IdentityUser> _userManager;
 
-        public UserItemsController(ShopDBContext context)
+        public UserItemsController(ShopDBContext context, SignInManager<IdentityUser> signInManager, UserManager<IdentityUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
+            _signInManager = signInManager;
         }
 
         // GET: UserItems
         public async Task<IActionResult> Index()
         {
-            if (signInManager.IsSignedIn(User))
+            Users user = new ShopDBContext().Users.FirstOrDefault(e => e.Email == _userManager.GetUserName(User));
+            if (_signInManager.IsSignedIn(User))
             {
-                Users user = new ShopDBContext().Users.FirstOrDefault(e => e.Email == _userManager.GetUserName(User));
-                return View(await _context.UserItems.ToListAsync());
+                List<Items> dbItems = _context.Items.ToList();
+                var userItems = _context.UserItems.Where(e => e.UserId == user.Id);
+
+                List<Items> items = new List<Items>();
+                foreach (var userItem in userItems)
+                {
+                    items.Add(dbItems.FirstOrDefault(e => e.Id == userItem.ItemId));
+                }
+
+                PurchaseHistoryViewModel purchases = new PurchaseHistoryViewModel();
+                purchases.user = user;
+                purchases.items = items;
+                purchases.userItems = userItems.OrderByDescending(e => e.PurchaseDate).ToList();
+                return View(purchases);
             }
             return RedirectToAction("Index", "Home");
         }
