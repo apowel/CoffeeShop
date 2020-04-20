@@ -30,9 +30,8 @@
                         @Html.DisplayFor(modelItem => Model.items.FirstOrDefault(e => e.Id == item.ItemId).ItemName)
                     </td>
                     <td>
-                        <a asp-action="Edit" asp-route-id="@item.UserItemId">Edit</a> |
-                        <a asp-action="Details" asp-route-id="@item.UserItemId">Details</a> |
-                        <a asp-action="Delete" asp-route-id="@item.UserItemId">Delete</a>
+                        <a asp-action="Details" asp-route-id="@item.ItemId" class="btn btn-primary m-1">Details</a>
+                        <a asp-action="Delete" asp-route-id="@item.ItemId" class="btn btn-danger m-1">Delete</a>
                     </td>
                 </tr>
             }
