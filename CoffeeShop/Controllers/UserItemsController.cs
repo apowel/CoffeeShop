@@ -93,19 +93,22 @@ namespace CoffeeShop.Controllers
         // GET: UserItems/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
+            UserItemDeleteViewModel viewModel = new UserItemDeleteViewModel();
+            viewModel.UserItem = _context.UserItems.FirstOrDefault(e => e.UserItemId == id);
+            viewModel.Item = _context.Items.FirstOrDefault(e => e.Id == viewModel.UserItem.ItemId);
             if (id == null)
             {
                 return NotFound();
             }
 
-            var userItems = await _context.UserItems
+            var items = await _context.UserItems
                 .FirstOrDefaultAsync(m => m.UserItemId == id);
-            if (userItems == null)
+            if (items == null)
             {
                 return NotFound();
             }
 
-            return View(userItems);
+            return View(viewModel);
         }
 
         // POST: UserItems/Delete/5
@@ -113,8 +116,8 @@ namespace CoffeeShop.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var userItems = await _context.UserItems.FindAsync(id);
-            _context.UserItems.Remove(userItems);
+            var items = await _context.UserItems.FindAsync(id);
+            _context.UserItems.Remove(items);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
