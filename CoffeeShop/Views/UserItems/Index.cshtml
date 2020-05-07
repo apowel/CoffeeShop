@@ -1,41 +1,44 @@
-﻿@model IEnumerable<CoffeeShop.Models.UserItems>
+﻿@model CoffeeShop.Models.ViewModels.PurchaseHistoryViewModel
 
 @{
     ViewData["Title"] = "Index";
 }
 
-<h1>Index</h1>
-
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.UserId)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.ItemId)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.UserId)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.ItemId)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.UserItemId">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.UserItemId">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.UserItemId">Delete</a>
-            </td>
-        </tr>
+@if (Model.userItems.Count() > 0)
+{
+    <h1>Purchase History for @Model.user.Email</h1>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>
+                    Time of Purchase
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.items)
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.userItems)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.PurchaseDate)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => Model.items.FirstOrDefault(e => e.Id == item.ItemId).ItemName)
+                    </td>
+                    <td>
+                        <a asp-action="Details" asp-route-id="@item.ItemId" class="btn btn-primary m-1">Details</a>
+                        <a asp-action="Delete" asp-route-id="@item.UserItemId" class="btn btn-danger m-1">Delete</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
 }
-    </tbody>
-</table>
+else
+{
+    <h1>There is no purchase history for @Model.user.Email</h1>
+}

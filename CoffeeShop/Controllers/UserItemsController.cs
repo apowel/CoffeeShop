@@ -8,28 +8,44 @@ using Microsoft.EntityFrameworkCore;
 using CoffeeShop.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using CoffeeShop.Models.ViewModels;
 
 namespace CoffeeShop.Controllers
 {
-    [AllowAnonymous]
+    [Authorize(Roles ="Administrator, Manager, User")]
     public class UserItemsController : Controller
     {
         private readonly ShopDBContext _context;
-        private readonly SignInManager<IdentityUser> signInManager;
+        private readonly SignInManager<IdentityUser> _signInManager;
         private readonly UserManager<IdentityUser> _userManager;
 
-        public UserItemsController(ShopDBContext context)
+        public UserItemsController(ShopDBContext context, SignInManager<IdentityUser> signInManager, UserManager<IdentityUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
+            _signInManager = signInManager;
         }
 
         // GET: UserItems
         public async Task<IActionResult> Index()
         {
-            if (signInManager.IsSignedIn(User))
+            Users user = new ShopDBContext().Users.FirstOrDefault(e => e.Email == _userManager.GetUserName(User));
+            if (_signInManager.IsSignedIn(User))
             {
-                Users user = new ShopDBContext().Users.FirstOrDefault(e => e.Email == _userManager.GetUserName(User));
-                return View(await _context.UserItems.ToListAsync());
+                List<Items> dbItems = _context.Items.ToList();
+                var userItems = _context.UserItems.Where(e => e.UserId == user.Id);
+
+                List<Items> items = new List<Items>();
+                foreach (var userItem in userItems)
+                {
+                    items.Add(dbItems.FirstOrDefault(e => e.Id == userItem.ItemId));
+                }
+
+                PurchaseHistoryViewModel purchases = new PurchaseHistoryViewModel();
+                purchases.user = user;
+                purchases.items = items;
+                purchases.userItems = userItems.OrderByDescending(e => e.PurchaseDate).ToList();
+                return View(purchases);
             }
             return RedirectToAction("Index", "Home");
         }
@@ -42,14 +58,14 @@ namespace CoffeeShop.Controllers
                 return NotFound();
             }
 
-            var userItems = await _context.UserItems
-                .FirstOrDefaultAsync(m => m.UserItemId == id);
-            if (userItems == null)
+            var items = await _context.Items
+                .FirstOrDefaultAsync(m => m.Id == id);
+            if (items == null)
             {
                 return NotFound();
             }
 
-            return View(userItems);
+            return View(items);
         }
 
         // GET: UserItems/Create
@@ -74,73 +90,25 @@ namespace CoffeeShop.Controllers
             return View(userItems);
         }
 
-        // GET: UserItems/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var userItems = await _context.UserItems.FindAsync(id);
-            if (userItems == null)
-            {
-                return NotFound();
-            }
-            return View(userItems);
-        }
-
-        // POST: UserItems/Edit/5
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("UserItemId,UserId,ItemId")] UserItems userItems)
-        {
-            if (id != userItems.UserItemId)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(userItems);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!UserItemsExists(userItems.UserItemId))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            return View(userItems);
-        }
-
         // GET: UserItems/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
+            UserItemDeleteViewModel viewModel = new UserItemDeleteViewModel();
+            viewModel.UserItem = _context.UserItems.FirstOrDefault(e => e.UserItemId == id);
+            viewModel.Item = _context.Items.FirstOrDefault(e => e.Id == viewModel.UserItem.ItemId);
             if (id == null)
             {
                 return NotFound();
             }
 
-            var userItems = await _context.UserItems
+            var items = await _context.UserItems
                 .FirstOrDefaultAsync(m => m.UserItemId == id);
-            if (userItems == null)
+            if (items == null)
             {
                 return NotFound();
             }
 
-            return View(userItems);
+            return View(viewModel);
         }
 
         // POST: UserItems/Delete/5
@@ -148,8 +116,8 @@ namespace CoffeeShop.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var userItems = await _context.UserItems.FindAsync(id);
-            _context.UserItems.Remove(userItems);
+            var items = await _context.UserItems.FindAsync(id);
+            _context.UserItems.Remove(items);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
